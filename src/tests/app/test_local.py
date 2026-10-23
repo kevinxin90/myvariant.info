@@ -8,7 +8,7 @@ class TestMetadataAssemblyAware(BiothingsWebAppTest):
     TEST_DATA_DIR_NAME = 'mv_app_test'
 
     def test_metadata_source_assembly(self):
-        metadata_url = f'{self.prefix}/' + 'metadata/fields'
+        metadata_url = 'metadata/fields'
         res_default = self.request(metadata_url)
         res_hg19 = self.request(metadata_url, params={'assembly': 'hg19'})
         res_hg38 = self.request(metadata_url, params={'assembly': 'hg38'})
@@ -16,7 +16,7 @@ class TestMetadataAssemblyAware(BiothingsWebAppTest):
         assert res_hg19.json() != res_hg38.json()  # I am not certain this will hold true
 
     def test_metadata_field_assembly(self):
-        metadata_url = f'{self.prefix}/' + 'metadata'
+        metadata_url = 'metadata'
         res_default = self.request(metadata_url)
         res_hg19 = self.request(metadata_url, params={'assembly': 'hg19'})
         res_hg38 = self.request(metadata_url, params={'assembly': 'hg38'})
@@ -106,8 +106,7 @@ class TestRedirecdt(BiothingsWebAppTest):
         assert res.headers['location'] == '/v1/variant/chrTM:g.1test'
 
     def test_redir_not(self):
-        # we don't have ES for this test class, expect 500
-        self.request('/v1/variant/chr8:g.7194707G>A', expect=500,
+        self.request('/v1/variant/chr8:g.7194707G>A', expect=404,
                      allow_redirects=False)
 
 
@@ -166,6 +165,13 @@ class TestGenomicIntervalQuery(BiothingsWebAppTest):
 
     def test_standalone_interval_query_pos_hg38(self):
         self.query(data={'q': 'chrX:30718532', 'assembly': 'hg38'})
+
+    def test_interval_query_span_limit(self):
+        self.request(
+            'query',
+            data={'q': 'chr1:1-5000002'},
+            expect=400,
+        )
 
     def test_prequery(self):
         self.query(data={'q': 'cadd.chrom:9 AND chr8:7194707'}, hits=False)
